@@ -8,29 +8,34 @@ const Contact: FunctionComponent = () => {
   const [contact, setContact] = useState<ContactRecord | null>(null);
   const [loader, setLoader] = useState(false);
 
-  useEffect(() => {
-    axios.get('https://randomuser.me/api/')
-      .then((response: AxiosResponse<{ results: UserData[] }>) => {
-        const userData: UserData = response.data.results[0];
-        setLoader(true);
-        const newContact: ContactRecord = {
-          id: "",
-          createdAt: "",
-          first: userData.name.first,
-          last: userData.name.last,
-          avatar: userData.picture.large,
-          twitter: userData.login.username,
-          notes: "Some notes",
-          favorite: true,
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const response = await axios.get('https://randomuser.me/api/');
+            const userData: UserData = response.data.results[0];
+            
+            const newContact: ContactRecord = {
+              id: "",
+              createdAt: "",
+              first: userData.name.first,
+              last: userData.name.last,
+              avatar: userData.picture.large,
+              twitter: userData.login.username,
+              notes: "Some notes",
+              favorite: true,
+            };
+            
+            setContact(newContact);
+          } catch (error) {
+            console.error('Error fetching random user data:', error);
+          } finally {
+            setLoader(false);
+          }
         };
-
-        setContact(newContact);
-        setLoader(false);
-      })
-      .catch((error: Error) => {
-        console.error('Error fetching random user data:', error);
-      });
-  }, []);
+      
+        fetchData();
+      }, []);
+      
 
   if (loader) return <div>Loading...</div>;
   if (!contact) return null;
