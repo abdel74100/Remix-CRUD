@@ -23,6 +23,7 @@ export default function App() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <title>Remix Contact</title>
       </head>
       <body>
         <div id="sidebar">
