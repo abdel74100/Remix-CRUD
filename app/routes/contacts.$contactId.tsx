@@ -1,22 +1,45 @@
 import { Form } from "@remix-run/react";
 import type { FunctionComponent } from "react";
-
+import axios, { AxiosResponse } from 'axios';
+import { useState, useEffect } from "react";
 import type { ContactRecord } from "../data";
 
-export default function Contact() {
-  const contact = {
-    first: "Your",
-    last: "Name",
-    avatar: "https://placekitten.com/g/200/200",
-    twitter: "your_handle",
-    notes: "Some notes",
-    favorite: true,
-  };
+const Contact: FunctionComponent = () => {
+  const [contact, setContact] = useState<ContactRecord | null>(null);
+  const [loader, setLoader] = useState(false);
+
+  useEffect(() => {
+    axios.get('https://randomuser.me/api/')
+      .then((response: AxiosResponse<{ results: UserData[] }>) => {
+        const userData: UserData = response.data.results[0];
+        setLoader(true);
+        const newContact: ContactRecord = {
+          id: "",
+          createdAt: "",
+          first: userData.name.first,
+          last: userData.name.last,
+          avatar: userData.picture.large,
+          twitter: userData.login.username,
+          notes: "Some notes",
+          favorite: true,
+        };
+
+        setContact(newContact);
+        setLoader(false);
+      })
+      .catch((error: Error) => {
+        console.error('Error fetching random user data:', error);
+      });
+  }, []);
+
+  if (loader) return <div>Loading...</div>;
+  if (!contact) return null;
 
   return (
     <div id="contact">
       <div>
         <img
+          onLoad={() => setLoader(false)} // Once image is loaded, set loader to false
           alt={`${contact.first} ${contact.last} avatar`}
           key={contact.avatar}
           src={contact.avatar}
@@ -70,7 +93,7 @@ export default function Contact() {
       </div>
     </div>
   );
-}
+};
 
 const Favorite: FunctionComponent<{
   contact: Pick<ContactRecord, "favorite">;
@@ -93,3 +116,18 @@ const Favorite: FunctionComponent<{
     </Form>
   );
 };
+
+interface UserData {
+  name: {
+    first: string;
+    last: string;
+  };
+  picture: {
+    large: string;
+  };
+  login: {
+    username: string;
+  };
+}
+
+export default Contact;
